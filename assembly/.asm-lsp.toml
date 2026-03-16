@@ -1,0 +1,5 @@
+version = "0.1"
+
+[default_config]
+assembler = "nasm"
+instruction_set = "x86/x86-64"
