@@ -1,9 +1,15 @@
-ENTRY(_start)
+ENTRY(start);
 
 SECTIONS
 {
-  . = 0x1000;
-  .text : {*(.text)}
-  .data : {*(.data)}
-  .bss : {*(.bss)}
+  . = 0x500;
+
+  .text  :
+  {
+    *(.text.start)   /* entry first */
+    *(.text*)        /* then everything else */
+  }
+
+  .data : { *(.data) }
+  .bss  : { *(.bss) }
 }
