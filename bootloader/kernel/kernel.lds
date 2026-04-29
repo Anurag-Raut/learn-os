@@ -3,8 +3,8 @@ ENTRY(start);
 SECTIONS
 {
   . = 0x500;
-
-  .text  :
+  
+  .text 0x600 : ALIGN(0x100)
   {
     *(.text.start)   /* entry first */
     *(.text*)        /* then everything else */

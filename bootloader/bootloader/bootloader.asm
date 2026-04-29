@@ -11,7 +11,7 @@ boot:
     mov es,ax
     xor bx,bx
 
-    mov al,2 ;number of sectors to read
+    mov al,10 ;number of sectors to read
     mov ch,0 ;cylinder 0
     mov cl,2 ;sector 2
     mov dh,0 ;head 0
@@ -20,7 +20,7 @@ boot:
     mov ah,0x02 ; instruction to read sector
     int 0x13
 
-    jmp [500h+18h]+500h
+    jmp [500h+18h]
 
     hlt
 

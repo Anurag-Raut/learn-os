@@ -10,6 +10,9 @@ start:
   hlt
 
 
+
+
+
 gdt_start:
 ;each gdt table entry id 8 byts 
 ; Address      Entry
@@ -32,7 +35,13 @@ gdt_descriptor:
     dw gdt_end - gdt_start - 1
     dd gdt_start
 
+section .bss 
+align 16 
+stack_bottom: 
+  resb 4096
+stack_top:
 
+section .text ;(Important , otherwise the prtected mode would also go in .bss and wont exits in text,  so the bootlasder doesnt load this protect mode and this call never happens)
 bits 32 
 protected_mode:
   mov ax,0x10 ;data segment 
@@ -42,6 +51,8 @@ protected_mode:
   mov fs, ax
   mov gs, ax
 
-  mov esp, 0x90000 ;setup the stack pointer
+  ;mov esp, 0x90000 ;setup the stack pointer(old way withtout free guaranttee)
+  mov esp, stack_top 
+
   extern main 
   call main
