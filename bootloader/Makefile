@@ -10,7 +10,7 @@ KERNEL_ELF=$(BUILD)/kernel.elf
 KERNEL_BIN=$(BUILD)/kernel.bin
 
 DISK=$(BUILD)/disk.img
-CFLAGS+=-ffreestanding -nostdlib -gdwarf-4 -m32 -ggdb3 -O0
+CFLAGS+=-ffreestanding -nostdlib -gdwarf-4 -m32 -ggdb3 -O0 -fno-stack-protector
 
 all: $(DISK)
 

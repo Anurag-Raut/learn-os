@@ -1,5 +1,5 @@
 bits 16
-
+section .text
 start:
   cli
   lgdt [gdt_descriptor] ;loading gdt
@@ -56,3 +56,11 @@ protected_mode:
 
   extern main 
   call main
+
+section .text
+bits 32
+global isr_default
+isr_default:
+  cli
+  hlt
+
