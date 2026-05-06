@@ -9,7 +9,9 @@ struct idt_entry {
   uint8_t
       type_attr; // Flags: present, privilege level, gate type (usually 0x8E)
   uint16_t offset_high; // Upper 16 bits of handler function address
-};
+} __attribute__((packed));
+
+struct idt_entry idt_table[256];
 
 void build_idt(struct idt_entry *idt_table, void (*handler)()) {
   uint32_t addr = (uint32_t)handler;
@@ -25,7 +27,7 @@ void load_idt(struct idt_entry *idt_table) {
   struct idt_pointer {
     uint16_t limit;
     uint32_t base;
-  };
+  } __attribute__((packed));
   struct idt_pointer idtp;
   idtp.base = (uint32_t)idt_table;
   idtp.limit = sizeof(struct idt_entry) * 256 - 1;
@@ -34,7 +36,6 @@ void load_idt(struct idt_entry *idt_table) {
 
 void main() {
   // setting up IDT
-  struct idt_entry idt_table[256];
   build_idt(idt_table, isr_default);
   load_idt(idt_table);
   volatile char *v = (volatile char *)0xB8000;

@@ -29,4 +29,7 @@ struct idt_entry {
   uint8_t  zero;         // Reserved, must be 0
   uint8_t  type_attr;    // Flags: present, privilege level, gate type (usually 0x8E)
   uint16_t offset_high;  // Upper 16 bits of handler function address
-} 
+}
+
+
+TODO
