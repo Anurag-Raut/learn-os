@@ -7,10 +7,8 @@ BOOT_BIN=$(BUILD)/bootloader.bin
 
 
 KERNEL_ELF=$(BUILD)/kernel.elf
-KERNEL_BIN=$(BUILD)/kernel.bin
 
 DISK=$(BUILD)/disk.img
-CFLAGS+=-ffreestanding -nostdlib -gdwarf-4 -m32 -ggdb3 -O0 -fno-stack-protector
 
 all: $(DISK)
 
@@ -24,15 +22,15 @@ $(BOOT_ELF): $(BOOT)/bootloader.asm $(BOOT)/bootloader.lds | $(BUILD)
 $(BOOT_BIN): $(BOOT_ELF)
 	objcopy -O binary $< $@
 
-$(KERNEL_ELF): $(KERNEL)/kernel.c $(KERNEL)/kernel.lds | $(BUILD)
-	nasm -f elf32 $(KERNEL)/entry.asm -o $(BUILD)/entry.o
-	gcc $(CFLAGS) -c $< -o $(BUILD)/kernel.o
-	ld -m elf_i386 -nmagic -T $(KERNEL)/kernel.lds $(BUILD)/entry.o $(BUILD)/kernel.o  -o $@
+# $(KERNEL_ELF): $(KERNEL)/kernel.c $(KERNEL)/kernel.lds | $(BUILD)
+# 	nasm -f elf32 $(KERNEL)/entry.asm -o $(BUILD)/entry.o
+# 	gcc $(CFLAGS) -c $< -o $(BUILD)/kernel.o
+# 	ld -m elf_i386 -nmagic -T $(KERNEL)/kernel.lds $(BUILD)/entry.o $(BUILD)/kernel.o  -o $@
 
-$(KERNEL_BIN): $(KERNEL_ELF)
-	objcopy -O binary $< $@
+$(KERNEL_ELF): 
+	make -C kernel
 
-$(DISK): $(BOOT_BIN) $(KERNEL_BIN)
+$(DISK): $(BOOT_BIN) $(KERNEL_ELF)
 	dd if=/dev/zero of=$@ bs=512 count=2880
 	dd if=$(BOOT_BIN) of=$@ conv=notrunc bs=512 count=1 seek=0
 	dd if=$(KERNEL_ELF) of=$@ conv=notrunc bs=512 seek=1

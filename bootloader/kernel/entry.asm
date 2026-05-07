@@ -64,3 +64,11 @@ isr_default:
   cli
   hlt
 
+global irq0
+irq0:
+    mov byte [0xb8000], 'T'
+    mov byte [0xb8001], 0x0F
+
+    mov al, 0x20
+    out 0x20, al
+    hlt
