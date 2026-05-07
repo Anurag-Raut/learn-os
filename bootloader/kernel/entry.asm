@@ -57,6 +57,10 @@ protected_mode:
   extern main 
   call main
 
+section .data
+
+counter db 0
+
 section .text
 bits 32
 global isr_default
@@ -64,18 +68,29 @@ isr_default:
   cli
   hlt
 
+
+
 global irq0
 
 irq0:
     mov al, [0xb8000]
-
+    cmp byte [counter], 10
+    
+    jne .skip
+    mov byte [counter] ,0
+    
     inc al
-
     cmp al, 'Z'
     jle .normal
 
     mov al, 'A'
     jmp .normal
+
+
+.skip:
+ inc byte [counter]
+ jmp .normal
+
 
 .normal:
     call store
@@ -84,6 +99,8 @@ irq0:
     out 0x20, al
 
     iret
+
+
 
 store:
     mov byte [0xb8000], al
