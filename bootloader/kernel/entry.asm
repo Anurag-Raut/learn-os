@@ -65,10 +65,27 @@ isr_default:
   hlt
 
 global irq0
+
 irq0:
-    mov byte [0xb8000], 'T'
-    mov byte [0xb8001], 0x0F
+    mov al, [0xb8000]
+
+    inc al
+
+    cmp al, 'Z'
+    jle .normal
+
+    mov al, 'A'
+    jmp .normal
+
+.normal:
+    call store
 
     mov al, 0x20
     out 0x20, al
-    hlt
+
+    iret
+
+store:
+    mov byte [0xb8000], al
+    mov byte [0xb8001], 0x0F
+    ret
