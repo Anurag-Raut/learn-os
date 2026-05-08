@@ -2,7 +2,10 @@
 
 extern void isr_default();
 extern void irq0();
+extern void irq1();
+
 void pic_remap();
+
 struct idt_entry {
   uint16_t offset_low; // Lower 16 bits of handler function address
   uint16_t selector;   // Code segment selector (from GDT, usually 0x08)
@@ -43,11 +46,35 @@ void set_idt_entry(uint8_t i, void (*handler)()) {
   idt_table[i].zero = 0;
   idt_table[i].type_attr = 0x8E;
 }
+char scancode_to_char(uint8_t scancode) {
+  static char keyboard_map[128] = {
+      0,   27,  '1',  '2',  '3',  '4', '5', '6',  '7', '8', '9', '0',
+      '-', '=', '\b', '\t', 'q',  'w', 'e', 'r',  't', 'y', 'u', 'i',
+      'o', 'p', '[',  ']',  '\n', 0,   'a', 's',  'd', 'f', 'g', 'h',
+      'j', 'k', 'l',  ';',  '\'', '`', 0,   '\\', 'z', 'x', 'c', 'v',
+      'b', 'n', 'm',  ',',  '.',  '/', 0,   '*',  0,   ' '};
+
+  if (scancode >= 128)
+    return 0;
+
+  return keyboard_map[scancode];
+}
+void keyboard_handler(uint32_t scancode) {
+  char c = scancode_to_char(scancode);
+  if (c == 0) {
+    return;
+  }
+  volatile char *v = (volatile char *)0xB8000;
+
+  v[0] = c;
+  v[1] = 0x07;
+}
 
 void main() {
   // setting up IDT
   build_idt(idt_table, isr_default);
   set_idt_entry(32, irq0);
+  set_idt_entry(33, irq1);
   load_idt(idt_table);
   pic_remap();
   __asm__ volatile("sti");
