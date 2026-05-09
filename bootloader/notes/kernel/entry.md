@@ -104,4 +104,6 @@ Master → IRQ0–IRQ7
 Slave  → IRQ8–IRQ15
 
 
-TODO: change make file so other pic files are also compiled in kernel directory 
+TODO: change make file so other pic files are also compiled in kernel directory (DONE) 
+
+Keyboard read at 0x60 port on irq1 (interrupt 33)

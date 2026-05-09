@@ -1,11 +1,10 @@
+#include "screen.h"
+#include "shell.h"
 #include <stdint.h>
-
 extern void isr_default();
 extern void irq0();
 extern void irq1();
-
 void pic_remap();
-
 struct idt_entry {
   uint16_t offset_low; // Lower 16 bits of handler function address
   uint16_t selector;   // Code segment selector (from GDT, usually 0x08)
@@ -53,7 +52,12 @@ char scancode_to_char(uint8_t scancode) {
       'o', 'p', '[',  ']',  '\n', 0,   'a', 's',  'd', 'f', 'g', 'h',
       'j', 'k', 'l',  ';',  '\'', '`', 0,   '\\', 'z', 'x', 'c', 'v',
       'b', 'n', 'm',  ',',  '.',  '/', 0,   '*',  0,   ' '};
-
+  if (scancode == 0x1C) {
+    return '\n';
+  }
+  if (scancode == 0x0E) {
+    return '\b';
+  }
   if (scancode >= 128)
     return 0;
 
@@ -64,10 +68,7 @@ void keyboard_handler(uint32_t scancode) {
   if (c == 0) {
     return;
   }
-  volatile char *v = (volatile char *)0xB8000;
-
-  v[0] = c;
-  v[1] = 0x07;
+  handle_input(c);
 }
 
 void main() {
@@ -85,6 +86,7 @@ void main() {
 
   v[2] = 'Q';
   v[3] = 0x07;
+  clear_screen();
   while (1)
     ;
 }
