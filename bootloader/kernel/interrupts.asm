@@ -1,8 +1,6 @@
 section .text
 extern keyboard_handler
-section .data
-
-counter db 0
+extern timer_handler
 
 section .text
 bits 32
@@ -17,26 +15,10 @@ global irq0
 
 irq0:
     pusha
-    mov al, [0xb8000]
-    cmp byte [counter], 10
-    
-    jne .skip
-    mov byte [counter] ,0
-    
-    inc al
-
-    ; call store
-    cmp al, 'Z'
-    jle normal
-
-    mov al, 'A'
-
-    jmp normal
+    call timer_handler
+    jmp eoi
 
 
-.skip:
- inc byte [counter]
- jmp normal
 
 global irq1
 irq1:
@@ -46,7 +28,7 @@ irq1:
   call keyboard_handler
   add esp ,4 ; add 4(bytes) to move the stack pointer upwards since we pushed an orgument 
   ;call store
-  jmp normal
+  jmp eoi
   
 
 store:
@@ -54,9 +36,11 @@ store:
   mov byte [0xb8001], 0x0F
   ret
 
-normal:
-
+eoi: ; END of interrupt to PIC
+    
     mov al, 0x20
     out 0x20, al ;signal the pic that we are done.
     popa
     iret
+
+ 

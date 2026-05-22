@@ -1,6 +1,8 @@
 #include "screen.h"
 #include "shell.h"
+#include "timer.h"
 #include <stdint.h>
+
 extern void isr_default();
 extern void irq0();
 extern void irq1();
@@ -78,6 +80,7 @@ void main() {
   set_idt_entry(33, irq1);
   load_idt(idt_table);
   pic_remap();
+  init_timer(100);
   __asm__ volatile("sti");
   volatile char *v = (volatile char *)0xB8000;
 
@@ -87,6 +90,15 @@ void main() {
   v[2] = 'Q';
   v[3] = 0x07;
   clear_screen();
+  while (1) {
+
+    if (ticks % 100 == 0) {
+      clear_screen();
+      print_string("1 second\n");
+    } else {
+    }
+  }
+
   while (1)
     ;
 }
