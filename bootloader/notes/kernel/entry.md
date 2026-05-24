@@ -1,109 +1,265 @@
+# Setting Up Stack
 
+Instead of having the stack inside the `.text` region, we should guarantee that it has dedicated free space and does not collide with kernel code as it grows.
 
+For this, we define the stack inside the `.bss` section.
 
-### setting up stack
-Instead of having stack in the text region we should guarantte it gets free space and does not collide with the kernel code when it gets bigger
+Example:
 
-So for this we are going to define it in BSS,
+```asm
+section .bss
+stack_bottom resb 4096
+stack_top:
+```
 
-### Setup an IDT
+The stack typically grows downward:
 
-0–31   → CPU exceptions
-32–255 → hardware + software interrupts
+```text
+stack_top
+↓
+↓
+stack_bottom
+```
 
-When an interrupt happens, CPU does:
+---
 
-Push state onto stack:
-EIP
-CS
-EFLAGS
-Look up IDT entry
-Jump to your handler
+# Setting Up the IDT
 
-This step is part of kernel so in kernel.c
+The IDT (Interrupt Descriptor Table) tells the CPU:
 
-Structure of IDT entry- 
+```text
+"When interrupt X happens, jump to handler Y"
+```
+
+Interrupt layout:
+
+|Interrupt Range|Purpose|
+|---|---|
+|0–31|CPU Exceptions|
+|32–255|Hardware + Software Interrupts|
+
+---
+
+# What Happens During an Interrupt
+
+When an interrupt occurs, the CPU automatically:
+
+1. Pushes CPU state onto the stack:
+    
+    - EIP
+        
+    - CS
+        
+    - EFLAGS
+        
+2. Looks up the interrupt entry inside the IDT
+    
+3. Jumps to the corresponding interrupt handler
+    
+
+---
+
+# IDT Entry Structure
+
+```c
 struct idt_entry {
-  uint16_t offset_low;   // Lower 16 bits of handler function address
-  uint16_t selector;     // Code segment selector (from GDT, usually 0x08)
-  uint8_t  zero;         // Reserved, must be 0
-  uint8_t  type_attr;    // Flags: present, privilege level, gate type (usually 0x8E)
-  uint16_t offset_high;  // Upper 16 bits of handler function address
-}
+    uint16_t offset_low;
+    uint16_t selector;
+    uint8_t zero;
+    uint8_t type_attr;
+    uint16_t offset_high;
+};
+```
 
+---
 
-### PIC Mapping (PIC = Programmable Interrupt Controller)
-Currently all cpu and hardware interruypts have the same handler we nee to provide different for each
+# Explanation of Each Field
 
-IRQ = Interrupt Requests
+|Field|Purpose|
+|---|---|
+|`offset_low`|Lower 16 bits of handler address|
+|`selector`|Code segment selector from GDT (usually `0x08`)|
+|`zero`|Reserved field, must be 0|
+|`type_attr`|Interrupt gate flags (`0x8E` usually)|
+|`offset_high`|Upper 16 bits of handler address|
 
-| IRQ   | Device   |
-| ----- | -------- |
-| IRQ0  | Timer    |
-| IRQ1  | Keyboard |
-| IRQ14 | Disk     |
+Since x86 protected mode uses 32-bit addresses, the handler address is split into:
 
-⚠️ The BIG problem
+- lower 16 bits
+    
+- upper 16 bits
+    
 
-By default, PIC maps IRQs like this:
+---
 
-IRQ	Interrupt Number
-IRQ0	8
-IRQ1	9
+# PIC Remapping
+
+PIC stands for:
+
+```text
+Programmable Interrupt Controller
+```
+
+The PIC is responsible for forwarding hardware interrupts to the CPU.
+
+---
+
+# IRQ (Interrupt Request)
+
+Hardware devices generate IRQs.
+
+Examples:
+
+|IRQ|Device|
+|---|---|
+|IRQ0|Timer|
+|IRQ1|Keyboard|
+|IRQ14|Disk|
+
+---
+
+# The Problem
+
+By default, the PIC maps IRQs like this:
+
+|IRQ|Interrupt Number|
+|---|---|
+|IRQ0|8|
+|IRQ1|9|
 
 But CPU exceptions already use:
 
+```text
 0–31
+```
 
-CPU cannot distinguish:
+This creates conflicts.
 
-"Was this timer?"
-or
-"Was this double fault?"
+Example:
 
+- Interrupt 8 could mean:
+    
+    - Timer IRQ
+        
+    - Double Fault Exception
+        
 
-Solution: Remap PIC
+The CPU cannot distinguish them correctly.
 
-We move hardware IRQs away from CPU exceptions.
+---
 
-Standard mapping:
+# Solution: Remap the PIC
 
-IRQ	Interrupt
-IRQ0	32
-IRQ1	33
+We move hardware interrupts away from CPU exception space.
 
+Standard remapping:
 
-TLDR Remapping the Hardware interrupts so they dont overlap with CPU
+|IRQ|New Interrupt|
+|---|---|
+|IRQ0|32|
+|IRQ1|33|
+|IRQ8|40|
+|IRQ15|47|
 
-we need to implement outb for 
+This avoids overlap with CPU exceptions.
 
-Goal of this step
+---
 
-Change PIC mappings from:
+# Why There Are Two PICs
 
-IRQ0–IRQ7  → interrupts 8–15   ❌
-IRQ8–IRQ15 → interrupts 70–77  ❌
+Classic x86 systems use:
 
-to:
+- Master PIC
+    
+- Slave PIC
+    
 
-IRQ0–IRQ7  → interrupts 32–39  ✅
-IRQ8–IRQ15 → interrupts 40–47  ✅
+Reason:
 
-Why there are TWO PICs
+- One PIC only supports 8 IRQ lines.
+    
 
-Old x86 systems use:
+So the system uses:
 
-Master PIC
-Slave PIC
+|PIC|IRQ Range|
+|---|---|
+|Master PIC|IRQ0–IRQ7|
+|Slave PIC|IRQ8–IRQ15|
 
-Because one PIC only supports 8 IRQs.
+The slave PIC is connected through the master PIC.
 
-So:
+---
 
-Master → IRQ0–IRQ7
-Slave  → IRQ8–IRQ15
+# Goal of PIC Remapping
 
+Change this:
 
-TODO: change make file so other pic files are also compiled in kernel directory (DONE) 
+|Old Mapping|Status|
+|---|---|
+|IRQ0–IRQ7 → 8–15|❌|
+|IRQ8–IRQ15 → 70–77|❌|
 
-Keyboard read at 0x60 port on irq1 (interrupt 33)
+Into this:
+
+|New Mapping|Status|
+|---|---|
+|IRQ0–IRQ7 → 32–39|✅|
+|IRQ8–IRQ15 → 40–47|✅|
+
+---
+
+# `outb`
+
+To communicate with hardware ports, we implement:
+
+```c
+outb(port, value)
+```
+
+This sends a byte directly to an I/O port.
+
+Used heavily for:
+
+- PIC
+    
+- PIT
+    
+- keyboard controller
+    
+- hardware devices
+    
+
+---
+
+# Keyboard Interrupts
+
+Keyboard input uses:
+
+|Component|Value|
+|---|---|
+|IRQ|IRQ1|
+|Interrupt|33|
+|Data Port|`0x60`|
+
+When a key is pressed:
+
+1. Keyboard controller raises IRQ1
+    
+2. PIC forwards interrupt 33
+    
+3. CPU jumps to keyboard handler
+    
+4. Scancode is read from port `0x60`
+    
+
+---
+
+# TODO
+
+- [x]  Change Makefile so kernel directory files are compiled correctly
+- [ ]  Proper exception handlers
+- [x]  PIT initialization
+- [ ]  Paging
+- [ ]  Kernel heap allocator
+- [ ]  Scheduler
+- [ ]  Context switching

@@ -1,4 +1,5 @@
 #include "stdint.h"
+#include <stdint.h>
 
 #ifndef IO_H
 #define IO_H
@@ -9,6 +10,12 @@ static inline void outb(uint16_t port, uint8_t value) {
    immediate value if the port number if small enough , (only 8 bit value is
    accepted (0 - 255)
    */
+}
+
+static inline uint8_t inb(uint16_t port) {
+  uint8_t value;
+  __asm__ volatile("inb %1, %0" : "=a"(value) : "Nd"(port));
+  return value;
 }
 
 // static inline uint8_t inb(uint16_t port){
