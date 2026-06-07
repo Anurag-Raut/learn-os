@@ -1,5 +1,7 @@
 
 #include "screen.h"
+#include "stringutils.h"
+
 char *video = (char *)0xB8000;
 int cursor = 0;
 
@@ -16,7 +18,34 @@ void print_char(char c) {
   video[2 * cursor + 1] = 0x07;
   move_cursor(RIGHT);
 }
+void print_int(int value) {
+  char buffer[32];
+  int_to_string(value, buffer);
+  print_string(buffer);
+}
+void print_hex32(uint32_t value) {
+  char buffer[11];
 
+  buffer[0] = '0';
+  buffer[1] = 'x';
+
+  for (int i = 0; i < 8; i++) {
+    uint8_t nibble = (value >> (28 - i * 4)) & 0xF;
+
+    if (nibble < 10)
+      buffer[i + 2] = '0' + nibble;
+    else
+      buffer[i + 2] = 'A' + (nibble - 10);
+  }
+
+  buffer[10] = '\0';
+
+  print_string(buffer);
+}
+void print_hex64(uint64_t value) {
+  print_hex32((uint32_t)(value >> 32));
+  print_hex32((uint32_t)value);
+}
 void print_string(char *input) {
   int i = 0;
   while (input[i] != '\0') {

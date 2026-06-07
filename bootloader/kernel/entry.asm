@@ -1,16 +1,15 @@
 bits 16
 section .text
+global start
+extern load_memory
 start:
-  cli
+  call load_memory
   lgdt [gdt_descriptor] ;loading gdt
   mov eax, cr0
   or eax, 1
   mov cr0, eax
   jmp 0x08:protected_mode ; 0x08 is the code segment 
   hlt
-
-
-
 
 
 gdt_start:

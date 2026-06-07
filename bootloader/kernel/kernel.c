@@ -1,4 +1,5 @@
 #include "interrupts.h"
+#include "memory.h"
 #include "screen.h"
 #include "timer.h"
 #include <stdint.h>
@@ -18,6 +19,8 @@ int main() {
   v[2] = 'Q';
   v[3] = 0x07;
   clear_screen();
+
+  memory_startup();
   while (1) {
 
     // if (ticks % 100 == 0) {

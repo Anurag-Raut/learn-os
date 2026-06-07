@@ -36,7 +36,7 @@ $(DISK): $(BOOT_BIN) $(KERNEL_ELF)
 	dd if=$(KERNEL_ELF) of=$@ conv=notrunc bs=512 seek=1
 
 run: $(DISK)
-	qemu-system-i386 -machine q35 -fda $(DISK)
+	qemu-system-i386 -machine q35 -m 512 -fda $(DISK)
 
 debug: $(DISK)
 	qemu-system-i386 -machine q35 -fda $(DISK) -gdb tcp::26000 -S

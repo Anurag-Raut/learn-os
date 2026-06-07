@@ -6,7 +6,7 @@ SECTIONS
   
   .text 0x600 : ALIGN(0x100)
   {
-    *(.text.start)   /* entry first */
+    
     *(.text*)        /* then everything else */
   }
 
