@@ -14,6 +14,7 @@ memory_map_entries:
 section .text
 
 load_memory:
+    mov word [memory_map_entries], 0
     pusha
 
     xor ax, ax
@@ -29,7 +30,7 @@ load_memory:
     mov edx, 0x534D4150        ; "SMAP"
     mov ecx, 24                ; request 24-byte entries
 
-    mov dword [es:di+20], 1    ; ACPI 3.0 attributes
+    ;mov dword [es:di+20], 1    ; ACPI 3.0 attributes
 
     int 0x15
 

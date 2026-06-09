@@ -58,17 +58,26 @@ void move_cursor(Direction d) {
   switch (d) {
   case DOWN: {
     int line = cursor / 80;
-    cursor = 80 * line + 1;
+    cursor = (line + 1) * 80;
+    break;
   }
+
   case UP: {
     int line = cursor / 80;
-    cursor = 80 * line + 1;
+    if (line > 0)
+      cursor = (line - 1) * 80;
+    break;
   }
+
   case LEFT: {
-    cursor--;
+    if (cursor > 0)
+      cursor--;
+    break;
   }
+
   case RIGHT: {
     cursor++;
+    break;
   }
   }
 }

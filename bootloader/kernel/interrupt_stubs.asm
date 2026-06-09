@@ -14,8 +14,9 @@ irq_common:
   call interrupt_handler
   mov al, 0x20
   out 0x20, al
+  
+  add esp,8 ;to remove the two 4 bytte values pushed (first pop the 2 values then the popa LIFO)  
   popa
-  add esp,8 ;to remove the two 4 bytte values pushed  
   iret
 
 %macro IRQ 2
