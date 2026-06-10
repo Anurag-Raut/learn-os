@@ -83,7 +83,7 @@ uint32_t pm_allocate() {
       // print_string("\n");
       uint32_t addr = (PAGE_SIZE * i) + pm_table_base;
 
-      print_string(" ADDR in allocate: ");
+      print_string(" ADDR in allocatet: ");
       print_int(addr);
       print_string("\n\n");
       return addr;

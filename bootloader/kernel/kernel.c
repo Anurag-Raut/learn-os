@@ -1,5 +1,6 @@
 #include "interrupts.h"
 #include "memory.h"
+#include "paging.h"
 #include "screen.h"
 #include "timer.h"
 #include <stdint.h>
@@ -22,16 +23,10 @@ int main() {
   memory_startup();
 
   __asm__ volatile("sti");
-  uint32_t addr_new = pm_allocate();
-  pm_allocate();
-  print_string("PRINTING ADDR: ");
-  print_int(addr_new);
-  print_string("\n");
-  pm_print_used();
 
-  print_string("\n\n");
-  pm_free(addr_new);
-  pm_print_used();
+  paging_init();
+  paging_enable();
+
   while (1) {
 
     // if (ticks % 100 == 0) {
