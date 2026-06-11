@@ -83,9 +83,9 @@ uint32_t pm_allocate() {
       // print_string("\n");
       uint32_t addr = (PAGE_SIZE * i) + pm_table_base;
 
-      print_string(" ADDR in allocatet: ");
-      print_int(addr);
-      print_string("\n\n");
+      // print_string(" ADDR in allocatet: ");
+      // print_int(addr);
+      // print_string("\n\n");
       return addr;
     }
   }
@@ -104,9 +104,9 @@ void pm_free(uint32_t addr) {
   // print_int(PAGE_SIZE);
   // print_string("\n");
   uint32_t ind = ((addr - pm_table_base) / PAGE_SIZE);
-  print_string("FREEING index: ");
-  print_int(ind);
-  print_string("\n");
+  // print_string("FREEING index: ");
+  // print_int(ind);
+  // print_string("\n");
   if (ind >= pm_table_length) {
     // error
     return;

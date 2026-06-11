@@ -1,3 +1,4 @@
+#include "heap.h"
 #include "interrupts.h"
 #include "memory.h"
 #include "paging.h"
@@ -27,6 +28,31 @@ int main() {
   paging_init();
   paging_enable();
 
+  uint32_t esp;
+  asm volatile("mov %%esp, %0" : "=r"(esp));
+  print_hex64(esp);
+
+  int long_arr[2000];
+
+  for (int i = 0; i < 2000; i++) {
+    long_arr[i] = i;
+  }
+
+  for (int i = 0; i < 2000; i++) {
+    if (long_arr[i] != i) {
+      print_string("ERROR in page mapping");
+    }
+  }
+  print_string("/n");
+  char *b = kmalloc(100);
+  for (int i = 0; i < 26; i++) {
+    b[i] = 'a' + i;
+  }
+
+  for (int i = 0; i < 26; i++) {
+    print_char(b[i]);
+  }
+  print_string("\n");
   while (1) {
 
     // if (ticks % 100 == 0) {

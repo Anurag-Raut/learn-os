@@ -37,7 +37,7 @@ gdt_descriptor:
 section .bss 
 align 16 
 stack_bottom: 
-  resb 4096
+  resb 10485760
 stack_top:
 
 section .text ;(Important , otherwise the prtected mode would also go in .bss and wont exits in text,  so the bootlasder doesnt load this protect mode and this call never happens)
