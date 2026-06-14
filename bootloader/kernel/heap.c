@@ -1,6 +1,7 @@
 
 #include "memory.h"
 #include "paging.h"
+#include "screen.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -22,4 +23,16 @@ void *kmalloc(size_t size) {
     heap_next += PAGE_SIZE;
   }
   return ptr;
+}
+
+void kfree(void *addr) {
+  uint32_t iaddr = (uint32_t)addr;
+  print_string("\n POINTER: ");
+  print_int(iaddr);
+  print_string("\n");
+  uint32_t *paddr = unmap_page(iaddr);
+  // print_int((uint32_t)paddr);
+  if (paddr != NULL) {
+    pm_free((uint32_t)paddr);
+  }
 }

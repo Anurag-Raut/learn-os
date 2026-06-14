@@ -45,10 +45,14 @@ int main() {
   }
   print_string("/n");
   char *b = kmalloc(100);
+  print_string("\n POINTER: ");
+  print_int((uint32_t)b);
+  print_string("\n");
   for (int i = 0; i < 26; i++) {
     b[i] = 'a' + i;
   }
 
+  kfree(b);
   for (int i = 0; i < 26; i++) {
     print_char(b[i]);
   }

@@ -92,7 +92,7 @@ uint32_t pm_allocate() {
   return 0;
 }
 void pm_free(uint32_t addr) {
-  print_string("freeing ADDR=");
+  print_string("\n freeing ADDR=");
   print_int(addr);
   print_string("\n");
   //

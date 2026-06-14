@@ -56,3 +56,25 @@ void map_page(uint32_t vaddr, uint32_t paddr) {
   uint32_t *pt_pointer = (uint32_t *)pt;
   pt_pointer[pt_ind] = (paddr & 0xFFFFF000) | 0x03;
 }
+
+uint32_t *unmap_page(uint32_t vaddr) {
+  uint32_t pd_ind = vaddr >> 22;
+  uint32_t pt_ind = vaddr >> 12 & 0x3FF;
+  uint32_t offset = (vaddr & 0xFFF);
+  if (!(page_directory[pd_ind] & 1)) {
+    return NULL;
+  }
+  uint32_t pt = page_directory[pd_ind] & 0xFFFFF000;
+  uint32_t *pt_pointer = (uint32_t *)pt;
+  uint32_t paddr = pt_pointer[pt_ind];
+  pt_pointer[pt_ind] = (0x0000);
+
+  /*
+      IMP : invalidate TLB, TLB is like a cache which stores the mapping of
+     v->p, even if we update the page tbale in the memory, CPU still has access
+     to the mapping in the buffer.
+  */
+  asm volatile("invlpg (%0)" ::"r"(vaddr) : "memory");
+
+  return (uint32_t *)paddr;
+}

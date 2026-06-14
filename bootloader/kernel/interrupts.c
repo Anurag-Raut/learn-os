@@ -21,7 +21,7 @@ extern void irq12();
 extern void irq13();
 extern void irq14();
 extern void irq15();
-
+extern void isr14();
 void (*irq_table[16])() = {irq0,  irq1,  irq2,  irq3, irq4,  irq5,
                            irq6,  irq7,  irq8,  irq9, irq10, irq11,
                            irq12, irq13, irq14, irq15};
@@ -40,6 +40,7 @@ void interrupt_handler(uint32_t interrupt_number, uint32_t error_code) {
   // char interrupt_string[16];
   // int_to_string(interrupt_number, interrupt_string);
   // print_string(interrupt_string);
+  print_int(interrupt_number);
   if (interrupt_number > 31) {
     // IRQ handlers
     switch (interrupt_number) {
@@ -52,6 +53,21 @@ void interrupt_handler(uint32_t interrupt_number, uint32_t error_code) {
     default:
       print_string("INVALID HANDLER");
       break;
+    }
+  } else {
+    // CPU exception
+    switch (interrupt_number) {
+
+    case 14: {
+      print_string("\nPAGE FAULT\n");
+      break;
+    }
+    default: {
+      // print_string("\n CPU EXCEPTION handler not found for  interrupt : ");
+      // print_int(interrupt_number);
+      // print_string(" /n");
+      break;
+    }
     }
   }
 }
@@ -88,7 +104,7 @@ void set_idt_entry(uint8_t i, void (*handler)()) {
 void init_interrupts() {
 
   build_idt(idt_table, isr_default);
-
+  set_idt_entry(14, isr14);
   for (int i = 0; i < 16; i++) {
     set_idt_entry(32 + i, irq_table[i]);
   }

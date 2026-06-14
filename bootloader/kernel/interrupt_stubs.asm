@@ -4,16 +4,26 @@ extern interrupt_handler
 section .text
 bits 32
 global isr_default
+global isr14
 isr_default:
   cli
   hlt
+
+isr14:
+  pusha
+  push 0
+  push 14
+  call interrupt_handler
+  add esp, 8 
+  popa
+  
 
 
 
 irq_common:
   call interrupt_handler
   mov al, 0x20
-  out 0x20, al
+  out 0x20, al ;end of interrupt command to PIC
   
   add esp,8 ;to remove the two 4 bytte values pushed (first pop the 2 values then the popa LIFO)  
   popa
