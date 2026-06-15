@@ -53,10 +53,11 @@ int main() {
   }
 
   kfree(b);
-  for (int i = 0; i < 26; i++) {
-    print_char(b[i]);
-  }
+  // for (int i = 0; i < 26; i++) {
+  print_char(b[0]);
+  // }
   print_string("\n");
+  print_string("AFTER");
   while (1) {
 
     // if (ticks % 100 == 0) {

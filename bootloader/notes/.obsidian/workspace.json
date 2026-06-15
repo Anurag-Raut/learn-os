@@ -185,6 +185,7 @@
   },
   "active": "853c1eaccb174fb4",
   "lastOpenFiles": [
+    "kernel/memory.md",
     "kernel/entry.md",
     "kernel/interrupts.md"
   ]

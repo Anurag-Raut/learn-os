@@ -8,17 +8,19 @@ global isr14
 isr_default:
   cli
   hlt
-
-isr14:
-  pusha
-  push 0
-  push 14
-  call interrupt_handler
-  add esp, 8 
-  popa
   
+isr14:
+    pusha
 
+    push dword [esp + 32]    ; push CPU error code
+    push dword 14            ; interrupt number
 
+    call interrupt_handler
+
+    add esp, 8
+    popa
+    add esp, 4               ; remove CPU error code
+    iret
 
 irq_common:
   call interrupt_handler

@@ -18,9 +18,9 @@ uint32_t pm_table_base;
 void memory_startup() {
   uint64_t total_usable = 0;
 
-  print_string("E820 Memory Map Entries\n");
-  print_int(memory_map_entries);
-  print_string("\n");
+  // print_string("E820 Memory Map Entries\n");
+  // print_int(memory_map_entries);
+  // print_string("\n");
 
   uint16_t max_chunk_ind = 0;
   uint64_t max_chunk_size = 0;
@@ -61,12 +61,12 @@ void memory_startup() {
   // init the page table
   pm_table_length = max_chunk_size / PAGE_SIZE;
   pm_table_base = memory_map[max_chunk_ind].base;
-  print_string("table lenght: ");
-  print_int(pm_table_length);
-  print_string("\n");
-  print_string("table base: ");
-  print_int(pm_table_base);
-  print_string("\n");
+  // print_string("table lenght: ");
+  // print_int(pm_table_length);
+  // print_string("\n");
+  // print_string("table base: ");
+  // print_int(pm_table_base);
+  // print_string("\n");
   for (int i = 0; i < pm_table_length; i++) {
     pm_table[i] = 0;
   }

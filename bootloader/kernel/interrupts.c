@@ -1,4 +1,5 @@
 #include "interrupts.h"
+#include "error_utils.h"
 #include "keyboard.h"
 #include "screen.h"
 #include "stringutils.h"
@@ -37,10 +38,11 @@ struct idt_entry {
 struct idt_entry idt_table[256];
 
 void interrupt_handler(uint32_t interrupt_number, uint32_t error_code) {
-  // char interrupt_string[16];
-  // int_to_string(interrupt_number, interrupt_string);
-  // print_string(interrupt_string);
+  print_string("INTERRupt no : ");
   print_int(interrupt_number);
+  print_string("\n  error code: ");
+  print_int(error_code);
+  print_string("\n");
   if (interrupt_number > 31) {
     // IRQ handlers
     switch (interrupt_number) {
@@ -59,7 +61,7 @@ void interrupt_handler(uint32_t interrupt_number, uint32_t error_code) {
     switch (interrupt_number) {
 
     case 14: {
-      print_string("\nPAGE FAULT\n");
+      panic("PAGE FAULT");
       break;
     }
     default: {
