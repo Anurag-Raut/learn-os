@@ -12,3 +12,9 @@ void init_timer(uint32_t freq) {
   outb(0x40, divisor & 0xFF);
   outb(0x40, (divisor >> 8) & 0xFF);
 }
+
+void sleep(uint32_t ticks_count) {
+  uint32_t start = ticks;
+  while (ticks - start < ticks_count)
+    ;
+}

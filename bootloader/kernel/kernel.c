@@ -1,12 +1,23 @@
-#include "heap.h"
 #include "interrupts.h"
 #include "memory.h"
 #include "paging.h"
+#include "process.h"
+#include "scheduler.h"
 #include "screen.h"
 #include "timer.h"
 #include <stdint.h>
 
 void pic_remap();
+
+void taskA() {
+  print_char('A');
+  sleep(1000);
+}
+
+void taskB() {
+  print_char('B');
+  sleep(1000);
+}
 
 int main() {
   init_interrupts();
@@ -28,43 +39,13 @@ int main() {
   paging_init();
   paging_enable();
 
-  uint32_t esp;
-  asm volatile("mov %%esp, %0" : "=r"(esp));
-  print_hex64(esp);
-
-  int long_arr[2000];
-
-  for (int i = 0; i < 2000; i++) {
-    long_arr[i] = i;
-  }
-
-  for (int i = 0; i < 2000; i++) {
-    if (long_arr[i] != i) {
-      print_string("ERROR in page mapping");
-    }
-  }
-  print_string("/n");
-  char *b = kmalloc(100);
-  print_string("\n POINTER: ");
-  print_int((uint32_t)b);
-  print_string("\n");
-  for (int i = 0; i < 26; i++) {
-    b[i] = 'a' + i;
-  }
-
-  kfree(b);
-  // for (int i = 0; i < 26; i++) {
-  print_char(b[0]);
-  // }
-  print_string("\n");
-  print_string("AFTER");
+  create_process(taskA);
+  create_process(taskB);
   while (1) {
 
-    // if (ticks % 100 == 0) {
-    //   clear_screen();
-    //   print_string("1 second\n");
-    // } else {
-    // }
+    if (ticks % 100 == 0) {
+      schedule();
+    }
   }
 
   while (1)
