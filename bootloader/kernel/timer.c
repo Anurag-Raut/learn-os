@@ -1,10 +1,21 @@
 #include "timer.h"
 #include "io.h"
+#include "process.h"
+#include "scheduler.h"
+#include "screen.h"
 #include <stdint.h>
 
 uint32_t ticks;
 
-void timer_handler() { ticks++; }
+uint32_t timer_handler(interrupt_frame_t *frame) {
+  ticks++;
+  if (ticks % 100 == 0) {
+
+    return schedule(frame);
+  }
+
+  return (uint32_t)frame;
+}
 
 void init_timer(uint32_t freq) {
   uint32_t divisor = 1193182 / freq;

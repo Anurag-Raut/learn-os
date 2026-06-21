@@ -10,13 +10,17 @@
 void pic_remap();
 
 void taskA() {
-  print_char('A');
-  sleep(1000);
+  while (1) {
+    print_char('A');
+    sleep(100);
+  }
 }
 
 void taskB() {
-  print_char('B');
-  sleep(1000);
+  while (1) {
+    print_char('B');
+    sleep(100);
+  }
 }
 
 int main() {
@@ -41,11 +45,8 @@ int main() {
 
   create_process(taskA);
   create_process(taskB);
+  print_string("DONE   creating process");
   while (1) {
-
-    if (ticks % 100 == 0) {
-      schedule();
-    }
   }
 
   while (1)

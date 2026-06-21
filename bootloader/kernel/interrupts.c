@@ -37,17 +37,20 @@ struct idt_entry {
 
 struct idt_entry idt_table[256];
 
-void interrupt_handler(uint32_t interrupt_number, uint32_t error_code) {
+uint32_t interrupt_handler(interrupt_frame_t *frame) {
+  uint32_t interrupt_number = frame->interrupt_number;
+
   // print_string("INTERRupt no : ");
   // print_int(interrupt_number);
   // print_string("\n  error code: ");
   // print_int(error_code);
-  // print_string("\n");
+  // print_string("\n")
+
   if (interrupt_number > 31) {
     // IRQ handlers
     switch (interrupt_number) {
     case 32:
-      timer_handler();
+      return timer_handler(frame);
       break;
     case 33:
       keyboard_handler();
@@ -72,6 +75,8 @@ void interrupt_handler(uint32_t interrupt_number, uint32_t error_code) {
     }
     }
   }
+
+  return (uint32_t)frame;
 }
 
 void build_idt(struct idt_entry *idt_table, void (*handler)()) {

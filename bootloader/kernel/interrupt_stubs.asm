@@ -23,8 +23,13 @@ isr14:
     iret
 
 irq_common:
+  push esp
   call interrupt_handler
+  add  esp,4
+
+  mov esp, eax
   mov al, 0x20
+
   out 0x20, al ;end of interrupt command to PIC
   
   add esp,8 ;to remove the two 4 bytte values pushed (first pop the 2 values then the popa LIFO)  
