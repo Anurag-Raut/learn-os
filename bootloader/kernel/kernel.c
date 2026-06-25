@@ -22,6 +22,13 @@ void taskB() {
     sleep(100);
   }
 }
+void taskC() {
+  while (1) {
+
+    print_char('C');
+    sleep(100);
+  }
+}
 
 int main() {
   init_interrupts();
@@ -45,6 +52,8 @@ int main() {
 
   create_process(taskA);
   create_process(taskB);
+  create_process(taskC);
+
   print_string("DONE   creating process");
   while (1) {
   }

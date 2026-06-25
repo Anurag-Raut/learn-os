@@ -18,6 +18,8 @@ typedef struct process {
   uint8_t *stack;
   uint32_t stack_size;
   uint32_t esp;
+
+  uint16_t pid;
 } process_t;
 
 extern process_t *processes[MAX_PROCESS];

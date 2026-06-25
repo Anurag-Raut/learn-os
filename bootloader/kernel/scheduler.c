@@ -31,11 +31,14 @@ uint32_t schedule(interrupt_frame_t *frame) {
 
   print_string("\n");
   for (int i = 0; i < process_counter; i++) {
-    process_t *p = processes[i];
+
+    int ind = (i + (current_process != NULL ? current_process->pid : 0)) %
+              process_counter;
+    process_t *p = processes[ind];
 
     if (p->state == READY) {
       print_string("CURRENT PROCESS: ");
-      print_int(i);
+      print_int(ind);
       print_string("\n");
       p->state = RUNNING;
 

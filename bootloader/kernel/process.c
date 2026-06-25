@@ -36,6 +36,7 @@ process_t *create_process(void (*handler)(void)) {
 
   p->stack = stack;
   p->stack_size = PROCESS_STACK_SIZE;
+  p->pid = process_counter;
 
   p->esp = (uint32_t)frame;
   // p->regs = frame->regs;
