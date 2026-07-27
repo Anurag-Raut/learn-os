@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "kernel/interrupts.md",
+                "file": "kernel/process.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "interrupts"
+              "title": "process"
             }
           }
         ]
@@ -185,8 +185,8 @@
   },
   "active": "853c1eaccb174fb4",
   "lastOpenFiles": [
+    "kernel/interrupts.md",
     "kernel/memory.md",
-    "kernel/entry.md",
-    "kernel/interrupts.md"
+    "kernel/entry.md"
   ]
 }

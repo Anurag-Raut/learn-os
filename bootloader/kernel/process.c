@@ -1,22 +1,29 @@
 #include "process.h"
 #include "heap.h"
 #include "interrupts.h"
+#include "memory.h"
+#include "memutils.h"
+#include "paging.h"
 #include "screen.h"
+
 process_t *processes[MAX_PROCESS];
-int process_counter = 0;
+uint32_t process_counter = 0;
 process_t *current_process = NULL;
 
 process_t *create_process(void (*handler)(void)) {
   process_t *p = kmalloc(sizeof(process_t));
   p->entry = handler;
   p->state = READY;
-
-  uint8_t *stack = kmalloc(PROCESS_STACK_SIZE);
+  p->cr3 = get_user_page_dir();
+  uint8_t *stack = alloc_user_space(0xFFFFFFFF - PROCESS_STACK_SIZE + 1,
+                                    PROCESS_STACK_SIZE, (uint32_t *)p->cr3);
   uint32_t stack_top = (uint32_t)(stack + PROCESS_STACK_SIZE);
+
+  load_cr3(p->cr3);
 
   interrupt_frame_t *frame =
       (interrupt_frame_t *)(stack_top - sizeof(interrupt_frame_t));
-
+  // building a fake frame
   frame->interrupt_number = 32;
   frame->error_code = 0;
 
@@ -39,6 +46,7 @@ process_t *create_process(void (*handler)(void)) {
   p->pid = process_counter;
 
   p->esp = (uint32_t)frame;
+  load_cr3((uint32_t)page_directory);
   // p->regs = frame->regs;
 
   processes[process_counter++] = p;

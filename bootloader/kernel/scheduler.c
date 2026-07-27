@@ -2,8 +2,11 @@
 
 #include "heap.h"
 #include "interrupts.h"
+#include "paging.h"
 #include "process.h"
 #include "screen.h"
+
+uint32_t scheduled_cr3 = 0;
 
 static void copy_regs(registers_t *dst, const registers_t *src) {
   dst->edi = src->edi;
@@ -23,10 +26,10 @@ uint32_t schedule(interrupt_frame_t *frame) {
     current_process->state = RUNNING;
     current_process->esp = (uint32_t)frame;
   }
-  // print_string("\n");
+  print_string("\n proocss counttter: ");
   // for (int i = 0; i < process_counter; i++) {
-  //
-  //   print_int(processes[i]->state);
+
+  print_int(process_counter);
   // }
 
   print_string("\n");
@@ -44,11 +47,10 @@ uint32_t schedule(interrupt_frame_t *frame) {
 
       if (current_process != NULL) {
         current_process->state = READY;
-        // copy_regs(&current_process->regs, &frame->regs);
       }
-      // copy_regs(&frame->regs, &p->regs);
 
       current_process = p;
+      scheduled_cr3 = p->cr3;
       break;
     }
   }

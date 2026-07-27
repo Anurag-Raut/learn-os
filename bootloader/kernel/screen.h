@@ -10,6 +10,7 @@ typedef enum {
 
 void print_char(char c);
 void print_int(int value);
+void print_hex32(uint32_t value);
 void print_hex64(uint64_t val);
 void print_string(char *input);
 void move_cursor(Direction d);

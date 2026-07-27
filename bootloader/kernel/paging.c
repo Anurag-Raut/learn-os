@@ -1,3 +1,4 @@
+#include "paging.h"
 #include "memory.h"
 #include "memutils.h"
 #include "screen.h"
@@ -16,7 +17,7 @@ void paging_init() {
    *mapping multiple kernel pages using identiy paging to accomodatetet 10Mb
    * kernel
    */
-  for (int p = 0; p < 3; p++) {
+  for (int p = 0; p < KERNEL_IDENTITY_PDE_COUNT; p++) {
 
     for (uint32_t i = 0; i < 1024; i++) {
       page_table[i] = (((p * 1024) + i) * 0x1000) |
@@ -41,30 +42,41 @@ void paging_enable() {
   print_string("Enabled paging...\n");
 }
 
-void map_page(uint32_t vaddr, uint32_t paddr) {
+void map_page(uint32_t vaddr, uint32_t paddr, uint32_t *user_page_directory) {
   uint32_t pd_ind = vaddr >> 22;           // high 10
   uint32_t pt_ind = (vaddr >> 12) & 0x3FF; // mid  10
   uint32_t offset = vaddr & 0xFFF;
-  if (!(page_directory[pd_ind] & 1)) {
+  uint32_t *temp_page_dir = page_directory;
+  if (user_page_directory != NULL) {
+    temp_page_dir = user_page_directory;
+  }
+
+  if (!(temp_page_dir[pd_ind] & 1)) {
     uint32_t *new_pt = (uint32_t *)pm_allocate();
     memset(new_pt, 0, PAGE_SIZE);
-    page_directory[pd_ind] = (uint32_t)new_pt | 0x03;
+    temp_page_dir[pd_ind] = (uint32_t)new_pt | 0x03;
   }
 
   uint32_t pt =
-      page_directory[pd_ind] & 0xFFFFF000; // removing the last 3 flag bytes
+      temp_page_dir[pd_ind] & 0xFFFFF000; // removing the last 3 flag bytes
   uint32_t *pt_pointer = (uint32_t *)pt;
   pt_pointer[pt_ind] = (paddr & 0xFFFFF000) | 0x03;
 }
 
-uint32_t *unmap_page(uint32_t vaddr) {
+uint32_t *unmap_page(uint32_t vaddr, uint32_t *user_page_directory) {
   uint32_t pd_ind = vaddr >> 22;
   uint32_t pt_ind = vaddr >> 12 & 0x3FF;
   uint32_t offset = (vaddr & 0xFFF);
-  if (!(page_directory[pd_ind] & 1)) {
+
+  uint32_t *temp_page_dir = page_directory;
+
+  if (user_page_directory != NULL) {
+    temp_page_dir = user_page_directory;
+  }
+  if (!(temp_page_dir[pd_ind] & 1)) {
     return NULL;
   }
-  uint32_t pt = page_directory[pd_ind] & 0xFFFFF000;
+  uint32_t pt = temp_page_dir[pd_ind] & 0xFFFFF000;
   uint32_t *pt_pointer = (uint32_t *)pt;
   uint32_t paddr = pt_pointer[pt_ind];
   pt_pointer[pt_ind] = (0x0000);
@@ -77,4 +89,18 @@ uint32_t *unmap_page(uint32_t vaddr) {
   asm volatile("invlpg (%0)" ::"r"(vaddr) : "memory");
 
   return (uint32_t *)paddr;
+}
+void load_cr3(uint32_t addr) {
+  asm volatile("mov %0 ,%%cr3" ::"r"(addr) : "memory");
+}
+
+uint32_t get_user_page_dir() {
+  uint32_t *new_pd = (uint32_t *)pm_allocate();
+  memset(new_pd, 0, PAGE_SIZE);
+
+  for (int pd = 0; pd < KERNEL_IDENTITY_PDE_COUNT; pd++) {
+    new_pd[pd] = page_directory[pd];
+  }
+
+  return (uint32_t)new_pd;
 }

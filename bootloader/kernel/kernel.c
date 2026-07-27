@@ -8,24 +8,22 @@
 #include <stdint.h>
 
 void pic_remap();
-
 void taskA() {
   while (1) {
-    print_char('A');
+    print_string("Task A\n");
     sleep(100);
   }
 }
 
 void taskB() {
   while (1) {
-    print_char('B');
+    print_string("Task B\n");
     sleep(100);
   }
 }
 void taskC() {
   while (1) {
-
-    print_char('C');
+    print_string("Task C\n");
     sleep(100);
   }
 }
@@ -45,8 +43,6 @@ int main() {
 
   memory_startup();
 
-  __asm__ volatile("sti");
-
   paging_init();
   paging_enable();
 
@@ -54,7 +50,7 @@ int main() {
   create_process(taskB);
   create_process(taskC);
 
-  print_string("DONE   creating process");
+  __asm__ volatile("sti");
   while (1) {
   }
 

@@ -20,10 +20,11 @@ typedef struct process {
   uint32_t esp;
 
   uint16_t pid;
+  uint32_t cr3;
 } process_t;
 
 extern process_t *processes[MAX_PROCESS];
-extern int process_counter;
+extern uint32_t process_counter;
 extern process_t *current_process;
 process_t *create_process(void (*handler)(void));
 

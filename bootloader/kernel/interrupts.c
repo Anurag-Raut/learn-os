@@ -56,7 +56,9 @@ uint32_t interrupt_handler(interrupt_frame_t *frame) {
       keyboard_handler();
       break;
     default:
-      print_string("INVALID HANDLER");
+      print_string("int number -  ");
+      print_int(interrupt_number);
+      print_string("  INVALID HANDLER\n");
       break;
     }
   } else {

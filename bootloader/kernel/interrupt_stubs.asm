@@ -1,5 +1,6 @@
 section .text
 extern interrupt_handler
+extern scheduled_cr3
 
 section .text
 bits 32
@@ -27,10 +28,22 @@ irq_common:
   call interrupt_handler
   add  esp,4
 
-  mov esp, eax
+  ; Keep both switch values in registers. The outgoing stack must remain mapped
+  ; until CR3 and ESP are changed together below.
+  mov edx, eax
   mov al, 0x20
 
   out 0x20, al ;end of interrupt command to PIC
+
+  mov ecx, [scheduled_cr3]
+  test ecx, ecx
+  jz .restore_frame
+
+  mov dword [scheduled_cr3], 0
+  mov cr3, ecx
+
+.restore_frame:
+  mov esp, edx
   
   add esp,8 ;to remove the two 4 bytte values pushed (first pop the 2 values then the popa LIFO)  
   popa
