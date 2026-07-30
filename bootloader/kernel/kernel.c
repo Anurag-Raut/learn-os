@@ -6,9 +6,9 @@
 #include "screen.h"
 #include "timer.h"
 #include <stdint.h>
-
 void pic_remap();
 void taskA() {
+  int val = 1 / 0;
   while (1) {
     print_string("Task A\n");
     sleep(100);

@@ -25,11 +25,29 @@ extern void irq15();
 
 // CPU execptions
 extern void isr_default();
+extern void isr0();
+extern void isr1();
+extern void isr2();
+extern void isr3();
+extern void isr4();
+extern void isr5();
+extern void isr6();
+extern void isr7();
+extern void isr8();
+extern void isr9();
+extern void isr10();
+extern void isr11();
+extern void isr12();
+extern void isr13();
 extern void isr14();
+extern void isr15();
 
 void (*irq_table[16])() = {irq0,  irq1,  irq2,  irq3, irq4,  irq5,
                            irq6,  irq7,  irq8,  irq9, irq10, irq11,
                            irq12, irq13, irq14, irq15};
+void (*isr_table[16])() = {isr0,  isr1,  isr2,  isr3, isr4,  isr5,
+                           isr6,  isr7,  isr8,  isr9, isr10, isr11,
+                           isr12, isr13, isr14, isr15};
 struct idt_entry {
   uint16_t offset_low; // Lower 16 bits of handler function address
   uint16_t selector;   // Code segment selector (from GDT, usually 0x08)
@@ -83,6 +101,8 @@ uint32_t interrupt_handler(interrupt_frame_t *frame) {
       break;
     }
     }
+
+    asm volatile("hlt");
   }
 
   return (uint32_t)frame;
@@ -120,7 +140,9 @@ void set_idt_entry(uint8_t i, void (*handler)()) {
 void init_interrupts() {
 
   build_idt(idt_table, isr_default);
-  set_idt_entry(14, isr14);
+  for (int i = 0; i < 16; i++) {
+    set_idt_entry(i, isr_table[i]);
+  }
   for (int i = 0; i < 16; i++) {
     set_idt_entry(32 + i, irq_table[i]);
   }
