@@ -1,5 +1,5 @@
 bits 16
-section .text
+section .entry
 global start
 extern load_memory
 start:

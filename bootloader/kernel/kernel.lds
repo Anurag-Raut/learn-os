@@ -3,11 +3,12 @@ ENTRY(start);
 SECTIONS
 {
   . = 0x500;
-  
-  .text 0x600 : ALIGN(0x100)
+  .entry 0x500:{
+    *(.entry)
+  }
+  .text :
   {
-    
-    *(.text*)        /* then everything else */
+    *(.text*)
   }
 
   .data : { *(.data) }

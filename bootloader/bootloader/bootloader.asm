@@ -11,7 +11,7 @@ boot:
     mov es,ax
     xor bx,bx
 
-    mov al,17 ;number of sectors to read TODO: make this dynamic ,so i wont need to change everytime
+    mov al,39 ;number of sectors to read TODO: make this dynamic ,so i wont need to change everytime
     mov ch,0 ;cylinder 0
     mov cl,2 ;sector 2
     mov dh,0 ;head 0
@@ -20,7 +20,8 @@ boot:
     mov ah,0x02 ; instruction to read sector
     int 0x13
     jc disk_error
-    jmp [500h+18h]
+    
+    jmp 0x0000:0x0500
 
     hlt
 

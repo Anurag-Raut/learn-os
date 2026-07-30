@@ -2,7 +2,7 @@
 #include "screen.h"
 #include "stringutils.h"
 
-char *video = (char *)0xB8000;
+volatile char *video = (volatile char *)0xB8000;
 int cursor = 0;
 
 void print_char(char c) {

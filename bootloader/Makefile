@@ -7,7 +7,7 @@ BOOT_BIN=$(BUILD)/bootloader.bin
 
 
 KERNEL_ELF=$(BUILD)/kernel.elf
-
+KERNEL_BIN=$(BUILD)/kernel.bin
 DISK=$(BUILD)/disk.img
 
 all: $(DISK)
@@ -33,7 +33,7 @@ $(KERNEL_ELF):
 $(DISK): $(BOOT_BIN) $(KERNEL_ELF)
 	dd if=/dev/zero of=$@ bs=512 count=2880
 	dd if=$(BOOT_BIN) of=$@ conv=notrunc bs=512 count=1 seek=0
-	dd if=$(KERNEL_ELF) of=$@ conv=notrunc bs=512 seek=1
+	dd if=$(KERNEL_BIN) of=$@ conv=notrunc bs=512 seek=1
 
 run: $(DISK)
 	qemu-system-i386 -machine q35 -m 512 -fda $(DISK)

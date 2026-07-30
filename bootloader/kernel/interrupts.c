@@ -5,7 +5,7 @@
 #include "stringutils.h"
 #include "timer.h"
 
-extern void isr_default();
+// hardware interrupts
 extern void irq0();
 extern void irq1();
 extern void irq2();
@@ -22,7 +22,11 @@ extern void irq12();
 extern void irq13();
 extern void irq14();
 extern void irq15();
+
+// CPU execptions
+extern void isr_default();
 extern void isr14();
+
 void (*irq_table[16])() = {irq0,  irq1,  irq2,  irq3, irq4,  irq5,
                            irq6,  irq7,  irq8,  irq9, irq10, irq11,
                            irq12, irq13, irq14, irq15};
@@ -63,16 +67,19 @@ uint32_t interrupt_handler(interrupt_frame_t *frame) {
     }
   } else {
     // CPU exception
+    print_string("=== EXCEPTION ===\n");
     switch (interrupt_number) {
 
     case 14: {
+
       panic("PAGE FAULT");
       break;
     }
     default: {
-      // print_string("\n CPU EXCEPTION handler not found for  interrupt : ");
-      // print_int(interrupt_number);
-      // print_string(" /n");
+      print_string("\n CPU EXCEPTION handler not found for  interrupt : ");
+      print_int(interrupt_number);
+      print_string(" /n");
+      panic("EXECPTION HANDLER NOT FOUND");
       break;
     }
     }

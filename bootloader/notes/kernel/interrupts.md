@@ -22,3 +22,84 @@ now moodern PIC haev divided into two modeules
 2) IO APIC - collects all IO interrupts and dispatched to local APICs
 in APIC we are not limited to 16 IRQs, (8+8 using master slave two pic chips)
 we have 100s according to chat gpt
+
+---
+
+# Interrupt stubs: how to think about them
+
+Interrupt stubs are small assembly functions that sit between the CPU and the C interrupt handler.
+
+When an interrupt occurs, the CPU does not make a normal C function call. It pushes a small hardware frame and jumps to the address stored in the IDT. The stack and registers are not yet arranged in the format expected by C, so an assembly stub adapts the CPU's interrupt mechanism to the kernel's C calling convention.
+
+```text
+CPU interrupt
+    -> IDT selects an assembly stub
+    -> stub saves registers and normalizes the frame
+    -> stub passes a frame pointer to C
+    -> C handles the interrupt or selects another process
+    -> stub restores a frame
+    -> iret resumes execution
+```
+
+The stub normally has five responsibilities:
+
+1. Save registers that the interrupted code was using.
+2. Push the interrupt number.
+3. Normalize the error code, because only some CPU exceptions push one automatically.
+4. Call the C interrupt handler with a pointer to the saved frame.
+5. Restore registers and use `iret`, rather than a normal `ret`.
+
+For hardware IRQs, the stub also sends an end-of-interrupt command to the PIC. A CPU exception must not send a PIC EOI because it did not originate from the PIC.
+
+## The stack layout is the contract
+
+The assembly pushes values onto the stack, while the C code reads those values through `interrupt_frame_t`. These two layouts must match byte-for-byte.
+
+For the current structure, the intended layout is:
+
+```text
+ESP -> interrupt number
+       error code
+       EDI
+       ESI
+       EBP
+       saved ESP slot from pusha
+       EBX
+       EDX
+       ECX
+       EAX
+       EIP
+       CS
+       EFLAGS
+```
+
+If the stub forgets to push an error code, every field after it moves by four bytes. C then reads the wrong registers, `popa` restores shifted values, and `iret` receives an invalid return address. This commonly causes a general-protection fault, double fault, or triple fault.
+
+Exceptions such as page fault, general-protection fault, invalid TSS, segment-not-present, stack fault, double fault, and alignment check push a CPU error code. Other exceptions require the stub to push a synthetic zero so C can receive one consistent frame format.
+
+## Why interrupt frames are also used for context switching
+
+When a timer interrupt happens, the interrupted process's state is already saved on its stack. The scheduler can save that stack pointer and choose another process's saved stack pointer. The stub then changes `ESP`, restores the selected frame, and executes `iret`.
+
+Therefore, a context switch is not mainly "copy every register." It is:
+
+```text
+save outgoing frame address
+switch address space if necessary
+switch to incoming frame address
+restore incoming frame
+```
+
+The initial fake frame created for a new process must have exactly the same layout as a real frame created by the interrupt stub.
+
+## Debugging checklist
+
+- Draw the stack after every `push`, `pusha`, `call`, `popa`, and `iret`.
+- Remember that the stack grows toward lower addresses.
+- Check whether the particular exception pushes a CPU error code.
+- Compare every assembly offset with `interrupt_frame_t`.
+- Remember that `call` temporarily pushes a return address.
+- Remember that `popa` discards the saved ESP slot instead of loading it into ESP.
+- Send PIC EOI only for hardware IRQs.
+- Inspect `EIP`, `CS`, `EFLAGS`, the error code, and `CR2` for page faults.
+- Test exception handling separately from timer-based context switching.
