@@ -91,6 +91,24 @@ uint32_t interrupt_handler(interrupt_frame_t *frame) {
     case 14: {
 
       panic("PAGE FAULT");
+      uint32_t cr2;
+      asm volatile("mov %%cr2, %0" : "=r"(cr2));
+      print_string("CR2 - ");
+      print_int(cr2);
+      print_string("\n");
+      // EIP , CS, eflags
+      print_string("EIP - ");
+
+      print_int(frame->regs.eip);
+
+      print_string("CS - ");
+      print_int(frame->regs.cs);
+
+      print_string("Eflags - ");
+      print_int(frame->regs.eflags);
+
+      print_string("Error Code - ");
+      print_int(frame->error_code);
       break;
     }
     default: {
@@ -140,7 +158,7 @@ void set_idt_entry(uint8_t i, void (*handler)()) {
 void init_interrupts() {
 
   build_idt(idt_table, isr_default);
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0; i < 32; i++) {
     set_idt_entry(i, isr_table[i]);
   }
   for (int i = 0; i < 16; i++) {

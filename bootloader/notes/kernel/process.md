@@ -18,14 +18,19 @@ TODO : Implement page table swtich
 Question - where should the page table exits for a process , incide kernel space or user space?
 A - process space 
 
-Remove all print() calls from schedule() and timer interrupt handlers.
-Create assembly ISR stubs for all CPU exceptions (0–31).
-Handle exceptions with error codes (#PF, #GP, #SS, etc.) correctly.
-Make all ISRs pass a consistent interrupt frame to the C handler.
-Implement a proper page fault handler that prints CR2, EIP, CS, and the error code.
-Add process states: NEW, READY, RUNNING, BLOCKED, TERMINATED.
-Implement process_exit().
+
+Done - Create assembly ISR stubs for all CPU exceptions (0–31).
+DONE-  Handle exceptions with error codes (#PF, #GP, #SS, etc.) correctly.
+DONE - Make all ISRs pass a consistent interrupt frame to the C handler.
+Done - Implement a proper page fault handler that prints CR2, EIP, CS, and the error code.
+DONE - Add process states: READY, RUNNING, BLOCKED, TERMINATED.
+DONE - Implement process_exit().
+ 
 Add a task-return trampoline so finished tasks automatically call process_exit().
+
+Currently the process trampoline should not return but is returning , so i did hlt instruction but still we get UD exception hanlder called.
+
+
 Allocate a dedicated kernel stack for every process.
 Update the scheduler to switch to each process's kernel stack.
 Stress-test context switching with multiple processes.
@@ -34,5 +39,4 @@ Fix remaining compiler warnings (e.g., const warning in print_string()).
 Remove or resolve the RWX ELF segment warning in the linker script (optional but recommended).
 
 
-TODO imp next - 
-Bootloader load more sectors or load it dynamic sector to load all kernel (Research on this)
+TODO: improve print commands

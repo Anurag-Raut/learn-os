@@ -15,5 +15,6 @@ void map_page(uint32_t virtual_addr, uint32_t physical_addr,
 uint32_t *unmap_page(uint32_t virtual_addr, uint32_t *user_page_directory);
 void load_cr3(uint32_t addr);
 
-uint32_t get_user_page_dir();
+uint32_t create_user_page_dir();
+void remove_user_page_dir(uint32_t pd);
 #endif // !PAGING_H

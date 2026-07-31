@@ -4,17 +4,25 @@
 #include "memory.h"
 #include "memutils.h"
 #include "paging.h"
+#include "scheduler.h"
 #include "screen.h"
 
 process_t *processes[MAX_PROCESS];
 uint32_t process_counter = 0;
 process_t *current_process = NULL;
 
+// TODO: Fix process tra
+__attribute__((noreturn)) void process_trampoline(void) {
+  current_process->entry();
+  process_exit(current_process, 0);
+  asm volatile("hlt");
+}
+
 process_t *create_process(void (*handler)(void)) {
   process_t *p = kmalloc(sizeof(process_t));
   p->entry = handler;
   p->state = READY;
-  p->cr3 = get_user_page_dir();
+  p->cr3 = create_user_page_dir();
   uint8_t *stack = alloc_user_space(0xFFFFFFFF - PROCESS_STACK_SIZE + 1,
                                     PROCESS_STACK_SIZE, (uint32_t *)p->cr3);
   uint32_t stack_top = (uint32_t)(stack + PROCESS_STACK_SIZE);
@@ -37,7 +45,7 @@ process_t *create_process(void (*handler)(void)) {
   frame->regs.ebp = stack_top;
   frame->regs.esp = stack_top;
 
-  frame->regs.eip = (uint32_t)handler;
+  frame->regs.eip = (uint32_t)process_trampoline;
   frame->regs.cs = 0x08;
   frame->regs.eflags = 0x202;
 
@@ -51,4 +59,14 @@ process_t *create_process(void (*handler)(void)) {
 
   processes[process_counter++] = p;
   return p;
+}
+
+void process_exit(process_t *p, uint32_t exit_code) {
+  p->state = TERMINATED;
+  p->exit_code = exit_code;
+
+  kfree(p);
+  print_string("Exited process with exit code:  ");
+  print_int(exit_code);
+  print_string("\n");
 }

@@ -94,7 +94,7 @@ void load_cr3(uint32_t addr) {
   asm volatile("mov %0 ,%%cr3" ::"r"(addr) : "memory");
 }
 
-uint32_t get_user_page_dir() {
+uint32_t create_user_page_dir() {
   uint32_t *new_pd = (uint32_t *)pm_allocate();
   memset(new_pd, 0, PAGE_SIZE);
 
@@ -104,3 +104,5 @@ uint32_t get_user_page_dir() {
 
   return (uint32_t)new_pd;
 }
+
+void remove_user_page_dir(uint32_t pd) { unmap_page(pd, NULL); }
